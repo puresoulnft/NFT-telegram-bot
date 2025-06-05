@@ -95,6 +95,7 @@ if __name__ == "__main__":
 # ---------------------------
 
 def preview(update: Update, context: CallbackContext):
+    logger.info(f"Command '{match.group(2)}' triggered with args: {context.args}")
     try:
         token_id = int(context.args[0])
         uri = contract.functions.tokenURI(token_id).call()
@@ -109,6 +110,16 @@ def preview(update: Update, context: CallbackContext):
         update.message.reply_text(f"Error fetching token {context.args[0]}: {e}")
 
 def latest(update: Update, context: CallbackContext):
+    logger.info(f"Command 'latest' triggered")
+    try:
+        latest_token_id = contract.functions.totalMinted().call() - 1
+        token_uri = contract.functions.tokenURI(latest_token_id).call()
+        msg = f"🆕 Latest NFT Minted
+Token ID: {latest_token_id}
+{token_uri}"
+    except Exception as e:
+        msg = f"⚠️ Error fetching latest minted token: {e}"
+    update.message.reply_text(msg)
     try:
         last_id = contract.functions.totalMinted().call() - 1
         context.args = [str(last_id)]
@@ -117,6 +128,7 @@ def latest(update: Update, context: CallbackContext):
         update.message.reply_text(f"Error fetching latest token: {e}")
 
 def rarity(update: Update, context: CallbackContext):
+    logger.info(f"Command '{match.group(2)}' triggered with args: {context.args}")
     try:
         token_id = int(context.args[0])
         details = contract.functions.getTokenDetails(token_id).call()
@@ -128,6 +140,7 @@ def rarity(update: Update, context: CallbackContext):
         update.message.reply_text(f"Error fetching rarity: {e}")
 
 def owner(update: Update, context: CallbackContext):
+    logger.info(f"Command '{match.group(2)}' triggered with args: {context.args}")
     try:
         token_id = int(context.args[0])
         owner_address = contract.functions.ownerOf(token_id).call()
@@ -136,6 +149,7 @@ def owner(update: Update, context: CallbackContext):
         update.message.reply_text(f"Error fetching owner: {e}")
 
 def mytokens(update: Update, context: CallbackContext):
+    logger.info(f"Command '{match.group(2)}' triggered with args: {context.args}")
     try:
         address = context.args[0]
         balance = contract.functions.balanceOf(address).call()
@@ -148,6 +162,7 @@ def mytokens(update: Update, context: CallbackContext):
         update.message.reply_text(f"Error fetching tokens: {e}")
 
 def transfers(update: Update, context: CallbackContext):
+    logger.info(f"Command '{match.group(2)}' triggered with args: {context.args}")
     try:
         latest = w3.eth.block_number
         events = contract.events.Transfer().get_logs(fromBlock=latest - 100, toBlock='latest')
