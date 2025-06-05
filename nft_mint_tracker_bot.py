@@ -114,9 +114,7 @@ def latest(update: Update, context: CallbackContext):
     try:
         latest_token_id = contract.functions.totalMinted().call() - 1
         token_uri = contract.functions.tokenURI(latest_token_id).call()
-        msg = f"🆕 Latest NFT Minted
-Token ID: {latest_token_id}
-{token_uri}"
+        msg = f"🆕 Latest NFT Minted\nToken ID: {latest_token_id}\n{token_uri}"
     except Exception as e:
         msg = f"⚠️ Error fetching latest minted token: {e}"
     update.message.reply_text(msg)
