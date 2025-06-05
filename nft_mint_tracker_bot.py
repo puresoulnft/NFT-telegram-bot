@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 WEB3_PROVIDER = os.getenv("WEB3_PROVIDER")
+TELEGRAM_CHAT_ID = int(os.getenv("TELEGRAM_CHAT_ID"))
 CONTRACT_ADDRESS = "0x33df1aeb441456dd1257c1011c6d776e8464ebf5"
 ABI_PATH = "abi.json"
 
@@ -28,7 +29,7 @@ if not w3.is_connected():
 with open(ABI_PATH, 'r') as f:
     abi = json.load(f)
 
-contract = w3.eth.contract(address=Web3.toChecksumAddress(CONTRACT_ADDRESS), abi=abi)
+contract = w3.eth.contract(address=Web3.to_checksum_address(CONTRACT_ADDRESS), abi=abi)
 
 # Telegram command: /mintcount
 def mintcount(update: Update, context: CallbackContext) -> None:
