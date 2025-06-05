@@ -60,7 +60,7 @@ def watch_events(bot: Bot, chat_id):
         try:
             new_block = w3.eth.block_number
             if new_block > latest_block:
-                events = contract.events.Transfer().createFilter(
+                events = contract.events.Transfer().create_filter(
                     fromBlock=latest_block + 1, toBlock=new_block
                 ).get_all_entries()
 
