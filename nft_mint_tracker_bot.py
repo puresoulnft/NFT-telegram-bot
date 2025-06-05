@@ -12,7 +12,6 @@ from dotenv import load_dotenv
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 WEB3_PROVIDER = os.getenv("WEB3_PROVIDER")
-TELEGRAM_CHAT_ID = int(os.getenv("TELEGRAM_CHAT_ID"))
 CONTRACT_ADDRESS = "0x33df1aeb441456dd1257c1011c6d776e8464ebf5"
 ABI_PATH = "abi.json"
 
@@ -89,3 +88,80 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ---------------------------
+# New Bot Commands
+# ---------------------------
+
+def preview(update: Update, context: CallbackContext):
+    try:
+        token_id = int(context.args[0])
+        uri = contract.functions.tokenURI(token_id).call()
+        metadata = requests.get(uri).json()
+        image = metadata.get("image", "")
+        name = metadata.get("name", f"Token #{token_id}")
+        traits = metadata.get("attributes", [])
+        trait_str = "\n".join([f"{t['trait_type']}: {t['value']}" for t in traits])
+        msg = f"🖼️ <b>{name}</b>\n\n{trait_str}"
+        bot.send_photo(chat_id=TELEGRAM_CHAT_ID, photo=image, caption=msg, parse_mode="HTML")
+    except Exception as e:
+        update.message.reply_text(f"Error fetching token {context.args[0]}: {e}")
+
+def latest(update: Update, context: CallbackContext):
+    try:
+        last_id = contract.functions.totalMinted().call() - 1
+        context.args = [str(last_id)]
+        preview(update, context)
+    except Exception as e:
+        update.message.reply_text(f"Error fetching latest token: {e}")
+
+def rarity(update: Update, context: CallbackContext):
+    try:
+        token_id = int(context.args[0])
+        details = contract.functions.getTokenDetails(token_id).call()
+        msg = f"📊 Rarity Details for Token {token_id}:\n"
+        for key, value in zip(details._fields, details):
+            msg += f"{key}: {value}\n"
+        update.message.reply_text(msg)
+    except Exception as e:
+        update.message.reply_text(f"Error fetching rarity: {e}")
+
+def owner(update: Update, context: CallbackContext):
+    try:
+        token_id = int(context.args[0])
+        owner_address = contract.functions.ownerOf(token_id).call()
+        update.message.reply_text(f"🏠 Token {token_id} is owned by:\n{owner_address}")
+    except Exception as e:
+        update.message.reply_text(f"Error fetching owner: {e}")
+
+def mytokens(update: Update, context: CallbackContext):
+    try:
+        address = context.args[0]
+        balance = contract.functions.balanceOf(address).call()
+        tokens = []
+        for i in range(balance):
+            token_id = contract.functions.tokenOfOwnerByIndex(address, i).call()
+            tokens.append(str(token_id))
+        update.message.reply_text(f"🎒 {address} owns tokens:\n" + ", ".join(tokens))
+    except Exception as e:
+        update.message.reply_text(f"Error fetching tokens: {e}")
+
+def transfers(update: Update, context: CallbackContext):
+    try:
+        latest = w3.eth.block_number
+        events = contract.events.Transfer().get_logs(fromBlock=latest - 100, toBlock='latest')
+        messages = []
+        for e in events[-5:]:
+            messages.append(f"🔄 Token {e['args']['tokenId']} from {e['args']['from']} to {e['args']['to']}")
+        update.message.reply_text("\n".join(messages) if messages else "No recent transfers.")
+    except Exception as e:
+        update.message.reply_text(f"Error fetching transfers: {e}")
+
+# Add handlers to main
+dispatcher.add_handler(CommandHandler("preview", preview))
+dispatcher.add_handler(CommandHandler("latest", latest))
+dispatcher.add_handler(CommandHandler("rarity", rarity))
+dispatcher.add_handler(CommandHandler("owner", owner))
+dispatcher.add_handler(CommandHandler("mytokens", mytokens))
+dispatcher.add_handler(CommandHandler("transfers", transfers))
