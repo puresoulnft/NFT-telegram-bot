@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Connect to Web3
 w3 = Web3(Web3.HTTPProvider(WEB3_PROVIDER))
-if not w3.isConnected():
+if not w3.is_Connected():
     raise Exception("Web3 connection failed")
 
 # Load ABI
