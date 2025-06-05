@@ -12,7 +12,7 @@ load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 WEB3_PROVIDER = os.getenv("WEB3_PROVIDER")
-CONTRACT_ADDRESS = os.getenv("CONTRACT_ADDRESS")
+CONTRACT_ADDRESS=0x33df1aeb441456dd1257c1011c6d776e8464ebf5
 ABI_PATH = "abi.json"
 
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +25,7 @@ if not w3.is_connected():
 with open(ABI_PATH, 'r') as f:
     abi = json.load(f)
 
-contract = w3.eth.contract(address=Web3.to_checksum_address(CONTRACT_ADDRESS), abi=abi)
+contract = w3.eth.contract(address=Web3.to_checksum_address(contract_address), abi=abi)
 
 def mintcount(update: Update, context: CallbackContext) -> None:
     try:
